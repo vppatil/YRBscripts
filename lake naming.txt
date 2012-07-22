@@ -1,0 +1,21 @@
+Looks good. I also have:
+
+0_19_1 and 0_19_3 changed to 0_87_1 and 0_87_3 
+
+Katy
+
+On Tue, Feb 14, 2012 at 10:48 AM, Vijay Patil <vppatil@alaska.edu> wrote:
+
+    Hi Katy,
+
+    These are all the changes I had written down from your previous emails.
+
+    *Lake 1_93_1 has been changed to lake 1_63_5*
+
+    Lake 1_37_1,2,3,4,5 from 2011 has been changed to 1_90_1,2,3,4,5
+
+    Lake 1_31a_1,2,3,4 from 2010 (or 1_25a_1,2,3,4) was changed to 1_88_1,2,3,4.
+
+    The 2011 0_10 has been renamed to 0_89. Note that 0_89_1 is not the focal in this case. The focal's lake name is 0_89_2.
+
+    -Vijay

@@ -1,0 +1,139 @@
+Things to compare between tem lakes
+-soil moisture
+-soil C) or TransectID like (N
+-resin strips
+-Plant biomass
+-Richness
+-Habitat heterogeneity
+-Active layer depth- forest edge and shoreline
+-layer depths
+-shrub biomass
+-shrub productivity- could do this now except for secondary growth.
+	- weigh shrubs while doing soils this weekend.
+
+-could compare shrub productivity with shrub diversity.
+
+TEM graphs
+Shrub entry program
+coords entry-lake performance eval
+
+then spp list entry
+
+1) get tem transects
+	- where PF_GS = -1
+2) get tem
+	- Where PF_Depth_L = -1
+	
+	
+#first load the rodbc package
+library(RODBC)
+
+#next 2 odbc connections are created) or TransectID like ( called yrb and yrb2011
+yrb<-odbcConnectAccess2007('c:/users/vppatil/desktop/yrb/YRBiodiversity.accdb')
+yrb2011<-odbcConnectAccess2007('C:/users/vppatil/dropbox/alaskafiles/2011 datasheets protocols/2011YRBiodiversity.accdb')
+Lakes<-sqlQuery(yrb2011,"select distinct LakeID,TransectID from tblTransects")
+
+
+
+
+#pct cover for tem hab zone comp
+pct<-sqlFetch(yrb2011,'tblVegTransectPctCover')
+pct2<-sqlQuery(yrb,"select * from tblVegTransectPctCover where TransectID like '%1_27_1'")
+pct2$LakeID='1_27_1'
+pct2<-pct2[4:6,]
+pct2$HabitatType<-factor(pct2$HabitatType)
+pct2<-tapply(pct2$HabitatTypeLength,list(pct2$LakeID,pct2$HabitatType),mean)
+
+pct<-merge(pct,Lakes,by='TransectID')
+tem.pc<-subset(pct,pct$LakeID %in% c('1_99_1',	'1_99_2'	,'0_9_1'	,'0_9_2'	,'1_27_1'	,'1_58_1'	,'0_2_1'	,'0_2_2'))
+tem.pc$LakeID<-factor(tem.pc$LakeID)
+
+
+#need to rank start points for all habitat types within all transects
+ranks<-vector()
+tem.pc$rank=0
+
+for (i in 1:dim(tem.pc)[1])
+{
+	tem.pc$rank[tem.pc$TransectID==tem.pc$TransectID[i]]= rank(tem.pc$Start[tem.pc$TransectID==tem.pc$TransectID[i]])}
+}
+
+#constrain transects to 100m
+tem.pc$HabitatTypeLength<-ifelse(tem.pc$Start>=100,0,tem.pc$HabitatTypeLength)
+tem.pc$HabitatTypeLength<-ifelse(tem.pc$End > 100,100-tem.pc$Start,tem.pc$HabitatTypeLength)
+
+#plot
+test<-tapply(tem.pc$HabitatTypeLength,list(tem.pc$LakeID,tem.pc$HabitatType),mean)
+
+test[is.na(test)]<-0
+test<-test[,c(1,4,7,10,15,16)]
+test<-rbind(test,c(0,0,6,2,92,0))
+row.names(test)[8]='1_27_1'
+
+lake.trends<-lake.class$lake.class[match(row.names(test),lake.class$LakeID)]
+comp.names<-paste(lake.trends,row.names(test),sep='\n')
+barplot(t(as.matrix(test)),col=rainbow(6),names.arg=comp.names,legend=TRUE,beside=TRUE)
+	
+#tem vs. non-tem meta
+T<-sqlQuery(yrb2011,"select * from tblVegTransectMetadata where PF_Depth_L = -1")
+nT<-sqlQuery(yrb2011,"select * from tblVegTransectMetadata where PF_GS = -1")
+
+
+
+names(sqlFetch(yrb2011,'tblVegTransectPctCover'))
+
+T<-merge(T,Lakes,by='TransectID')
+nT<-merge(nT,Lakes,by='TransectID')
+
+#T<-subset(T,T$LakeID %in% c('1_99_1',	'1_99_2'	,'0_9_1'	,'0_9_2'	,'1_27_1'	,'1_58_1'	,'0_2_1'	,'0_2_2'))
+#nT<-subset(nT,nT$LakeID %in% c('1_99_1',	'1_99_2'	,'0_9_1'	,'0_9_2'	,'1_27_1'	,'1_58_1'	,'0_2_1'	,'0_2_2'))
+
+T$LakeID<-factor(T$LakeID)
+nT$LakeID<-factor(nT$LakeID)
+
+pfrost<-function(df)
+{
+	df<-T
+	df1<-subset(df,df$PF_GS>0)
+	df2<-subset(df,df$PF_SH>0)
+	df3<-subset(df,df$PF_FOR>0)
+	pg<-tapply(df1$PF_GS,df1$LakeID,mean)
+	ps<-tapply(df2$PF_SH,df2$LakeID,mean)
+	pf<-tapply(df3$PF_FOR,df3$LakeID,mean)
+	
+	p<-cbind(pg,ps,pf)
+	return(p)
+}
+
+
+pfrost2<-function(df)
+{
+	pl<-tapply(df$PF_DEPTH_L,df$LakeID,mean)
+	pfe<-tapply(df$PF_DEPTH_FE,df$LakeID,mean)
+	
+	p<-cbind(pl,pfe)
+	p<-data.frame(na.omit(p))
+	return(p)
+}
+
+pT.mean<-apply(pT,2,function(x) mean(na.omit(x)))
+pT.se<-apply(pT,2,function(x) se(na.omit(x)))
+p.plot<-barplot(pT.mean,names.arg=c('GS','Shrub','Forest'),main='Mean Active Layer Depth')
+superpose.eb(p.plot,pT.mean,pT.se)
+
+habs<-rep(c('GS','SH','FOR'),each=dim(pT)[1])
+p.dat<-data.frame(Hab=habs,depth=c(pT[,1],pT[,2],pT[,3]))
+p.dat<-na.omit(p.dat)
+p.anova<-lm(depth~Hab,data=p.dat)
+aov(p.anova)
+
+
+	lake.class<-data.frame(LakeID=c('1_99_1','1_99_2','0_9_1','0_9_2','1_27_1','1_58_1','0_2_1','0_2_2'),lake.class=c('shrink','stable','stable','shrink','fluct','increase','fluct','increase')
+	
+	
+	
+
+
+
+
+Flooding frequency

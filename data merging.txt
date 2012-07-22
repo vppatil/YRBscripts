@@ -1,0 +1,106 @@
+meta.formerge<-sqlQuery(yrb,"select TransectID,Observer1,Observer2,TransectDate as VegTransectDate,TransectTime as VegTransectTime,PF_DEPTH_L,PF_DEPTH_FE as PF_Depth_F,FIB_DEPTH_L,HUM_DEPTH_L,FIB_DEPTH_FE,HUM_DEPTH_FE,PF_Peat_Notes,MU as MU_w,EM as EM_w,FM as FM_w,PestsPathogens,GrowthAnomalies,Phenology,AnimalUse,Disturbance,Drawings as Drawing,Notes1 from tblVegTransectMetadata")
+
+#fix the merging stuff
+
+fib_l<-ifelse(meta.formerge$FIB_DEPTH_L<0,0,meta.formerge$FIB_DEPTH_L)
+fib_l[is.na(fib_l)]=0
+hum_l<-ifelse(meta.formerge$HUM_DEPTH_L<0,0,meta.formerge$HUM_DEPTH_L)
+hum_l[is.na(hum_l)]=0
+
+l<-cbind(fib_l,hum_l)
+
+Peat_Depth_L<-apply(l,1,max)
+
+fib_f<-ifelse(meta.formerge$FIB_DEPTH_FE<0,0,meta.formerge$FIB_DEPTH_FE)
+fib_f[is.na(fib_f)]=0
+hum_f<-ifelse(meta.formerge$HUM_DEPTH_FE<0,0,meta.formerge$HUM_DEPTH_FE)
+hum_f[is.na(hum_f)]=0
+
+f<-cbind(fib_f,hum_f)
+
+Peat_Depth_F<-apply(l,1,max)
+
+meta.formerge$Peat_Depth_L=Peat_Depth_L
+meta.formerge$Peat_Depth_F=Peat_Depth_F
+
+meta.formerge<-meta.formerge[,c(1:7,23,24,12:22)]
+oldmeta$Drawing=as.factor(oldmeta$Drawing)
+
+oldmeta<-sqlQuery(old,'select * from tblVegTransectMetadata')
+oldmeta$VegTransectTime<-as.factor(oldmeta$VegTransectTime)
+oldmeta$MU_w<-as.factor(oldmeta$MU_w)
+oldmeta$EM_w<-as.factor(oldmeta$EM_w)
+oldmeta$FM_w<-as.factor(oldmeta$FM_w)
+oldmeta$PF_Depth_L<-as.numeric(oldmeta$PF_Depth_L)
+oldmeta$PF_Depth_F<-as.numeric(oldmeta$PF_Depth_F)
+oldmeta$Peat_Depth_L<-as.numeric(oldmeta$Peat_Depth_L)
+oldmeta$Peat_Depth_F<-as.numeric(oldmeta$Peat_Depth_F)
+
+cbind(names(meta.formerge),names(oldmeta))
+names(meta.formerge)[6]='PF_Depth_L'
+meta<-rbind(meta.formerge,oldmeta)
+
+names(sqlFetch(yrb,'tblVegTransectPctCover')
+
+
+pc.formerge<-sqlQuery(yrb,"select TransectID,HabitatType,Start,End,HabitatTypeLength,Sphag,Non_Sphag,Lichen,Gram,Forb,EG_Shrub,Dec_Shrub,Tree,DW,Bare,Notes from tblVegTransectPctCover")
+
+pc.formerge$PestsPathogens = pc.formerge$GrowthAnomalies = pc.formerge$Phenology = pc.formerge$AnimalUse = pc.formerge$Disturbance = pc.formerge$HabitatDistanceNotes = ''
+
+#collapse nonvasc
+
+vals=c(0,.5,5.5,17.5,37.5,62.5,87.5)
+cat=c('-','t','1','2','3','4','5')
+
+sw<-function(x)
+{
+	vals=c(0,.5,5.5,17.5,37.5,62.5,87.5)
+	cat=c('-','t','1','2','3','4','5')
+	
+	num=vals[match(x,cat)]
+	return(num)
+}
+
+sw2<-function(x)
+{
+	vals=c(0,.5,5.5,17.5,37.5,62.5,87.5)
+	cat=c('-','t','1','2','3','4','5')
+	
+	cats = cat[match(x,vals)]
+	return(cats)
+}
+
+sph=sw(pc.formerge$Sphag)
+ns=sw(pc.formerge$Non_Sphag)
+l=sw(pc.formerge$Lichen)
+
+tot=sph+ns+l
+
+tot[is.na(tot)]=0
+mins=c(0,1,10,25,50,75)
+maxs=c(1,10,25,50,75,100)
+means=(mins+maxs)/2
+
+bins=rep(0,length(tot))
+for(i in 1:length(tot))
+{
+	for (j in 1:5)
+	{
+		if(tot[i] > mins[j] & tot[i] < maxs[j])
+			{bins[i] = means[j]}
+	}
+}
+
+nv=sw2(bins)
+
+oldpc<-sqlQuery(old,"select * from tblVegTransectPctCover")
+pc.formerge$NonVasc = nv
+
+#now apply sw function to sphag, non-sphag,lichen for merge
+apply
+
+#need to fix this part a bit.
+#sqlQuery("Insert into tblVegTransectPctCover ('TransectID','HabitatType','Start','End','HabitatTypeLength','NonVasc','Gram','Forb','EG_Shrub','Dec_Shrub','Tree','DW','Bare','Notes') VALUES(
+
+spp.formerge=sqlQuery(yrb,"select * from tblVegTransectSppList")
+spp.formerge$TransectID = paste(spp.formerge$Bearing,spp.formerge$LakeID)

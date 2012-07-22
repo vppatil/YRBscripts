@@ -1,0 +1,28 @@
+#try species area curves for plant data
+#need lake areas- proper estimates. come from arcgis?
+
+setwd('c:/users/vppatil/desktop/yrb')
+library(RODBC)
+
+yrb<-odbcConnectAccess2007('YRBiodiversity.accdb')
+
+setwd('c:/users/vppatil/dropbox/alaskafiles/2011 datasheets protocols/')
+lakeareas<-read.csv('c:/users/vppatil/dropbox/alaskafiles/2011 datasheets protocols/lake_areas.csv',header=TRUE)
+
+#need to merge lakeareas, richness summary by lakeid
+
+#get richness summaries, ignoring unknowns for now
+#would need to join richness with spp list table to get names anyway
+
+rich.query="select LakeID,TransectID,count(Species) as sppcount from (select distinct LakeID,TransectID,Species from (select tblTransects.LakeID,tblVegTransectSppList.* from tblTransects inner join tblVegTransectSppList on tblTransects.TransectID = tblVegTransectSppList.TransectID)) group by LakeID,TransectID"
+
+rich.query2="select LakeID,avg(sppcount) as avgRich from (select LakeID,TransectID,count(Species) as sppcount from (select distinct LakeID,TransectID,Species from (select tblTransects.LakeID,tblVegTransectSppList.* from tblTransects inner join tblVegTransectSppList on tblTransects.TransectID = tblVegTransectSppList.TransectID)) group by LakeID,TransectID) group by LakeID"
+
+rich<-sqlQuery(yrb,rich.query2) ##done-
+
+#now merge with lake areas from lake table
+rich<-merge(rich,lakeareas,by='LakeID')
+
+
+library(mmSAR)
+

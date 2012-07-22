@@ -1,0 +1,209 @@
+Hello there Vijay, sorry for the delay. You account has been created, your username is vppatil and password is j1j2j3j4j5.
+
+Please change this as soon as you login.
+
+ha ha, yeah, good question.
+So in theory, I think the fact that the system is administered by someone else means that you should really only have the permissions to change stuff in your home directory (located at /home/vppatil/, the "~" is shorthand for a given user's home directory, you will see the ~ all over the linux world) -- so you should be pretty safe. The one notable exception to this is the /home/stuff/ directory where everyone seems to put stuff that they want everyone else to access (this is how Fengming has been distributing his changes to the various codes. so as long as you don't modify anything that already exists in the /home/stuff directory, you should be good to go.
+
+To login type: 
+
+ssh -P 55000 vppatil@aeshna.iab.uaf.edu
+
+the -p is for port
+if you add a -X it will be able to forward the graphical displays (gitk, git gui)
+
+I am not sure how this works from a windows machine. you might need something called PuTTy to provide the ssh program?
+
+Hi all- 
+
+Thanks for the meetings last week, that was helpful and good to catch up with everyone.
+As I promised, here are some general notes for working with git.
+Please forward to anyone else who might be interested that I might have missed.
+
+-Tobey
+
+
+Tobey's workspace notes for git - in no particular order
+================================================
+
+Add master branch to prompt
+-------------------------------------------------------
+Add a function to your ~/.bashrc file (or ~/.bash_profile) that will 
+show what branch you are on. This function has worked for me most 
+of the time (occasionally it will show the branch twice and I have 
+to restart my terminal program):
+
+function parse_git_branch {
+# works...no trailing space
+git branch --no-color 2> /dev/null | sed -e '/^[^*]/d' -e 's/* \(.*\)/[\1] /'
+}
+
+Add this line to the ~/.bashrc or ~/.bash_profile as well to make sure your 
+prompt calls the function...
+
+PS1="$PS1: $(parse_git_branch) \$ "
+
+For the changes to take effect, make sure you either restart your 
+terminal program or type:
+
+source ~/.bashrc
+
+If that function is not working for you, there are plenty of other examples out on 
+the web.
+
+
+Configuration settings.
+-------------------------------------------------
+You can use the git config command, or you can manually edit the 
+config file in your project's ".git" directory. (Keep in mind that there can 
+be global git configuration settings, and configuration settings 
+that are specific to an individual repository, or maybe even for 
+specific files?)
+
+Set up to always use color for the diff command.  
+
+git config color.diff true
+
+Set the default text editor to use nano for commit messages and tag
+messages. You can actually set it to use a gui editor like Gedit or 
+Notepad++ or probably even Eclipse, but I found it frustratingly slow to
+wait for that to load, so I use nano, since I find it easier than 
+vim or vi. If I know I will be writing a long message, I will prepare
+it first in another editor and then just paste it into nano.
+
+git config core.editor nano
+
+Set the default pager to use for viewing long output of certain 
+commands (like git log or git diff)
+
+git config core.pager less
+
+Using git push/pull:
+-----------------------------------------------
+I have found it easiest to always explicitly specify the branch names.
+You will find lots of documentation and examples that don't do this; i.e they
+just push and pull from a remote repository without specifying the branches,
+but this has consistently confused me. There is something about the default
+behavior that I don't understand I guess. 
+
+The git terminology for specifying the branches is a "refspec". The general
+idea behind a "refspec" is the source followed by a colon, followed by 
+the destination. There are clever ways to make the refspecs so that they apply
+to general cases, but I simply use the branch names.
+
+Here are some examples:
+Push the local branch named "devel" to a remote branch named "devel" in
+the remote repository named "origin"
+
+git push origin devel:devel
+
+Go get changes from the remote repository named "tobey", and 
+specifically from his branch entitled "spatialmode", and merge them 
+into the local branch named "testing-branch"
+
+git pull tobey spatialmode:testing-branch
+
+Getting help offline
+------------------------------------------------------
+I always forget that the git commands are compound -- so to get help 
+for "git commit", you have to type "man git-commit" or it will give you 
+the help for "git", and then after you quit, it will complain about not 
+finding the help for a command called "commit". (This did not seem to 
+be the case on the windows/cygwin setup).
+
+Good online help:
+------------------------------------------------------
+General reference
+http://git-scm.com/book/
+http://www-cs-students.stanford.edu/~blynn/gitmagic/ch01.html
+http://stackoverflow.com/questions/315911/git-for-beginners-the-definitive-practical-guide
+
+Long video, but this guy started github, so I think he understands it well:
+http://ontwik.com/git-github/mastering-git-basics-by-tom-preston-werner/
+
+Workflow:
+http://sandofsky.com/blog/git-workflow.html
+
+(I have a giant list of other git-related links if anyone is interested)
+
+
+Branching / merging
+-------------------------------------------------------
+I think it is worth getting used to branching for your own personal work.
+(see the sandofsky workflow link above) In general, I will branch, try an 
+idea, and then when I am happy with it I will merge back into whatever
+branch I was working on before. One thing to keep in mind is that the 
+default behavior is a "fast-forward merge" which means that when you are
+done you don't actually see the branch in the history view. I.e. assuming 
+you are done with topic branch and want to merge it back into master -- and 
+have done no work on master since the histories diverged:
+
+      A---B---C topic
+     /
+D---E master
+
+Assume the current branch it master and you type:
+
+git merge topic
+
+You will get this:
+
+D---E---A---B---C master
+
+
+If on the other hand you want to "see" the branch history you would type 
+this (no fast forward merge):
+
+git merge topic --no-ff
+
+And you'd see this:
+
+      A---B---C topic
+     /          \
+D---E------------F master
+
+I have not used the more complicated tools like rebase, cherry-pick, bisect
+etc. (all mentioned in the sandofsky workflow blog post linked above), but I can 
+see how they will become more useful with more people involved. In fact, I think
+we will need to learn some of the more complicated tools to keep the history on
+GitHub readable. I think this will become more apparent as we use the tools more.
+I don't understand it well enough yet to be able to prescribe a set of commands.
+
+
+Other assorted notes...
+------------------------------------------------------------
+Reality is I don't actually need to go back in the history of the 
+code all that often - but knowing that if I *need to* I can lookup the command in 
+about 10 minutes frees me to try wild ideas and just keep modifying.
+
+One advantage to learning the command line and gitk/git gui (as opposed
+to the eclipse git plugin) is that what you know will transfer to other
+computers (aeshna for example has gitk and git gui -- you just have to 
+remember to ssh with the -X flag. If you forget the flag, when you are
+logged into aeshna and type gitk, it will complain about not having a 
+$DISPLAY variable set)
+
+One other thing to remember with gitk is that by default it will not
+show remote branches -- if you want to see the remote branches, you have
+to pass the --all flag, so "gitk --all"
+
+Yeah, for sure:
+http://www.tobeycarman.com/temdocs/tem-dvm/html/
+you can see the other versions by substituting "dos-tem" and "dvm-dos-tem" in place of "tem-dvm" in the above link.
+
+I hadn't passed them around since they are on my personal webserver and I have no idea what the "policy" (I doubt there is one) or feelings might be about having all the docs (since they essentially include the entire source code base) out on the web. There are no public links to the pages, but they still exist on the world-wild-web, and I wasn't sure if that was kosher or not. But I got sick of shuffling stuff between various computers, so I put them up there just to get the conversation going.
+
+Also I have not regenerated them in well over a month, so they won't match the code exactly.
+
+As for how to get ahold of my version, at this time that will be best done via aeshna. (I overheard dave talking to Dustin today about signing you up for an account. I guess rangifer would work too now that I think of it...
+
+Once you have that, then sign in and type this:
+
+git clone /home/tobey/tem-dvm
+
+That will create a git repo inside a folder named "tem-dvm" in your home directory (or where ever you are when you issue the command. I think it will by default set up a remote named "origin" that will point toward /home/tobey/tem-dvm
+
+I have not "pushed" from my local machine (where I do my work) to aeshna in quite some time, so what you get will be not quite up to date...I still need to wrap up a bunch of these odds and ends...
+
+There are some settings regarding the database connection that have to get tweaked between my machine/rangifer/aeshna...I haven't figured out the best way to manage that yet. You'll see those comments in the commit log.
+

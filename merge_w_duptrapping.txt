@@ -1,0 +1,28 @@
+#open the conns
+library(RODBC)
+setwd('C:/users/vppatil/dropbox/alaskafiles/2011 datasheets protocols')
+yrb11<-odbcConnectAccess2007('2011YRBiodiversity.accdb')
+
+#change this to the real version when ready
+yrb<-odbcConnectAccess2007('c:/users/vppatil/desktop/yrb/YRBiodiversityCopy.accdb')
+
+#merge all habitat designations across duplicate rows
+
+q="select transectid,species,count(*) from tblvegtransectspplist group by transectid,species having count(*) > 1"
+dups<-sqlQuery(yrb,q)
+
+
+#now pick one, takeout all records corresponding,sum together
+for (i in 1:dim(dups)[1])
+{
+	mod<-dups[i,]
+	q=paste("select gs,ts,ls,dt,df,mf,cf,aq,mu,fm,em,other from tblvegtransectspplist where transectid = '",mod$transectid,"' and species = ",mod$species,sep='')
+	habs<-sqlQuery(yrb,q)
+
+	summed<-apply(habs,2,sum)
+	summed<-ifelse(summed > 0,1,summed)
+
+	entries<-paste(names(summed),"=",summed,collapse=',')
+	up.q=paste("update tblvegtransectspplist set ",entries," where transectid = '",mod$transectid,"' and species = ",mod$species,sep='')
+	sqlQuery(yrb,up.q)
+}

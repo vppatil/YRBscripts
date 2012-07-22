@@ -1,0 +1,54 @@
+library(RODBC)
+	yrb2011<-odbcConnectAccess2007('c:/users/vijay/documents/my dropbox/alaskafiles/2011 datasheets protocols/2011YRBiodiversity.accdb')
+	yrb<-odbcConnectAccess2007('c:/users/vijay/desktop/yrb/YRBiodiversity.accdb')
+
+	
+	#need to get table of habitat zone widths and fm,mu,em widths for every lake
+	#first get names
+	
+	n.meta<-names(sqlFetch(yrb2011,'tblVegTransectMetadata'))
+	n.pct<-names(sqlFetch(yrb2011,'tblVegTransectPctCover'))
+	
+	#now get table of aq widths by lakeID
+	meta<-sqlFetch(yrb2011,'tblVegTransectMetadata',stringsAsFactors=FALSE)
+	meta$FM<-as.numeric(meta$FM)
+	meta$MU<-as.numeric(meta$MU)
+	meta$EM<-as.numeric(meta$EM)
+	
+	aq<-subset(meta,select=c('TransectID','FM','MU','EM'))
+	aq<-aq[is.na(aq$FM)==FALSE,]
+	
+	
+	tl<-sqlQuery(yrb2011,"Select LakeID,TransectID from tblTransects")
+	aq<-merge(aq,tl,by='TransectID')
+	
+	
+	sqlSave(yrb2011,aq,"AqHabWidths")
+	
+	mean.aq.widths<-sqlQuery(yrb2011,"select avg(FM) as fmAvg,avg(MU) as muAvg,avg(EM) as emAvg,LakeID from AqHabWidths group by LakeID")
+	
+	#now make table of habitat widths
+	habs<-sqlFetch(yrb2011,"tblVegTransectPctCover")
+	habs<-merge(habs,tl,by='TransectID')
+	sqlSave(yrb2011,habs,"HabitatTemp")
+	mean.habs<-sqlQuery(yrb2011,"select avg(HabitatTypeLength) as avgHabLen,HabitatType,LakeID from HabitatTemp group by HabitatType,LakeID")
+	hab.table<-xtabs(avgHabLen~LakeID+HabitatType,data=mean.habs)
+	hab.table<-data.frame(cbind(hab.table))
+	hab.table$LakeID<-row.names(hab.table)
+	names(hab.table)[1]<-'LakeID'
+	
+	veg.table<-merge(hab.table,mean.aq.widths,by='LakeID')
+	
+	veg.lakes<-veg.table[,1]
+	veg.table<-veg.table[,-1]
+	veg.table<-subset(veg.table,select=c('CF','DF','DT','GS','LS','MF','TS','fmAvg','muAvg','emAVg'))
+
+	a<-vegdist(veg.table,method='euclidean')
+	
+	
+	library(vegan)
+	vd<-vegdist(veg.table)
+	
+	
+	#sqlQuery(yrb2011,"drop table AqHabWidths")
+	#sqlQuery(yrb2011,"drop table HabitatTemp")

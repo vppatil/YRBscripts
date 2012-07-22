@@ -1,0 +1,76 @@
+# first read in coords
+setwd('c:/users/vppatil/desktop')
+coords<-read.csv('correctedcoords.csv',stringsAsFactors=FALSE)
+
+#then get list of all lakes
+lakes<-read.csv('alllakes.csv')$LakeID
+
+#missing lakes
+missing<-lakes[lakes%in%coords$LakeID == FALSE]
+
+#change some names
+#done
+
+library(RODBC)
+y11<-odbcConnectAccess2007('c:/users/vppatil/dropbox/alaskafiles/2011 datasheets protocols/2011YRBiodiversity.accdb')
+
+sqlQuery(y11,'select * from tblLakeBaseInfo where LakeID = '1_27_1')
+
+t<-sqlFetch(y11,'tblTransects',stringsAsFactors=FALSE)
+m<-sqlFetch(y11,'tblVegTransectMetadata',stringsAsFactors=FALSE)
+coords$tid<-paste(coords$bearing,coords$LakeID,sep='_')
+
+
+#need to fix 1_93, get comparison working properly.
+#also need to figure out what happened to other coordinates
+
+nomatch=coords[is.na(match(coords$tid,t$TransectID)),]
+match=coords[coords$tid %in% t$TransectID,]
+
+unique(nomatch$LakeID)
+
+#do partial match of what you have so far.
+m.indices=match(match$tid,t$TransectID)
+t$VegEndNorthing[m.indices]
+
+#don't get rid of previous stops
+t$vegStopNorth=NA
+t$vegStopEast=NA
+t$vegStopNorth[m.indices]=match$stopnorth
+t$vegStopEast[m.indices]=match$stopeast
+
+prev<-is.na(t$vegStopEast) & !is.na(t$VegEndEasting)
+t$vegStopEast[prev]= t$VegEndEasting[prev]
+
+prev2<-is.na(t$vegStopNorth) & !is.na(t$VegEndNorthing)
+t$vegStopNorth[prev2]= t$VegEndNorthing[prev2]
+
+
+########################################## to fix the bad lake ids. Not done
+nomatch.lakes=unique(nomatch$LakeID)
+
+nomatch.lakes
+#start with a few lakes at a time and compare transect range for each
+lake='1_33_1'
+coords[coords$LakeID == lake,]
+t[t$LakeID == lake,]
+grep(lake,m$TransectID)
+
+coords$bearing[coords$LakeID == lake & coords$bearing == 5] = 53
+
+#lake 1_95
+#1_93- in 2011 meta
+#1_79_2 ? 
+
+#1_42 exists but isn't in the transects sheet for some reason
+#1_37 switched
+
+
+
+a<-t[t$TransectID %in% coords$tid,]
+
+b<-coords[is.na(coords$startnorth)==FALSE,]
+c<-t[match(b$LakeID,t$LakeID),]
+
+match(coords$tid,t$TransectID)
+

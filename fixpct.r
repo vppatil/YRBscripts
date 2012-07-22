@@ -1,0 +1,30 @@
+q1= paste("Update tblVegTransectPctCover Set Gram = '",updat$Gram,"' where TransectID = '",updat$TransectID,"' and HabitatType = '",updat$HabitatType,"' and Start = ",updat$Start," and End = ",updat$End,sep="")
+q2= paste("Update tblVegTransectPctCover Set NonVasc = '",updat$NonVasc,"' where TransectID = '",updat$TransectID,"' and HabitatType = '",updat$HabitatType,"' and Start = ",updat$Start," and End = ",updat$End,sep="")
+q3= paste("Update tblVegTransectPctCover Set Forb = '",updat$Forb,"' where TransectID = '",updat$TransectID,"' and HabitatType = '",updat$HabitatType,"' and Start = ",updat$Start," and End = ",updat$End,sep="")
+q4= paste("Update tblVegTransectPctCover Set Dec_Shrub = '",updat$Dec_Shrub,"' where TransectID = '",updat$TransectID,"' and HabitatType = '",updat$HabitatType,"' and Start = ",updat$Start," and End = ",updat$End,sep="")
+q5= paste("Update tblVegTransectPctCover Set EG_Shrub = '",updat$EG_Shrub,"' where TransectID = '",updat$TransectID,"' and HabitatType = '",updat$HabitatType,"' and Start = ",updat$Start," and End = ",updat$End,sep="")
+q6= paste("Update tblVegTransectPctCover Set Tree = '",updat$Tree,"' where TransectID = '",updat$TransectID,"' and HabitatType = '",updat$HabitatType,"' and Start = ",updat$Start," and End = ",updat$End,sep="")
+q7= paste("Update tblVegTransectPctCover Set DW = '",updat$DW,"' where TransectID = '",updat$TransectID,"' and HabitatType = '",updat$HabitatType,"' and Start = ",updat$Start," and End = ",updat$End,sep="")
+q8= paste("Update tblVegTransectPctCover Set Bare = '",updat$Bare,"' where TransectID = '",updat$TransectID,"' and HabitatType = '",updat$HabitatType,"' and Start = ",updat$Start," and End = ",updat$End,sep="")
+
+for (i in 1:dim(new)[1])
+{
+updat=new[i,]
+q1= paste("Update tblVegTransectPctCover Set Gram = '",updat$Gram,"' where TransectID = '",updat$TransectID,"' and HabitatType = '",updat$HabitatType,"' and Start = ",updat$Start," and End = ",updat$End,sep="")
+q2= paste("Update tblVegTransectPctCover Set NonVasc = '",updat$Non_Vasc,"' where TransectID = '",updat$TransectID,"' and HabitatType = '",updat$HabitatType,"' and Start = ",updat$Start," and End = ",updat$End,sep="")
+q3= paste("Update tblVegTransectPctCover Set Forb = '",updat$Forb,"' where TransectID = '",updat$TransectID,"' and HabitatType = '",updat$HabitatType,"' and Start = ",updat$Start," and End = ",updat$End,sep="")
+q4= paste("Update tblVegTransectPctCover Set Dec_Shrub = '",updat$Dec_Shrub,"' where TransectID = '",updat$TransectID,"' and HabitatType = '",updat$HabitatType,"' and Start = ",updat$Start," and End = ",updat$End,sep="")
+q5= paste("Update tblVegTransectPctCover Set EG_Shrub = '",updat$EG_Shrub,"' where TransectID = '",updat$TransectID,"' and HabitatType = '",updat$HabitatType,"' and Start = ",updat$Start," and End = ",updat$End,sep="")
+q6= paste("Update tblVegTransectPctCover Set Tree = '",updat$Tree,"' where TransectID = '",updat$TransectID,"' and HabitatType = '",updat$HabitatType,"' and Start = ",updat$Start," and End = ",updat$End,sep="")
+q7= paste("Update tblVegTransectPctCover Set DW = '",updat$DW,"' where TransectID = '",updat$TransectID,"' and HabitatType = '",updat$HabitatType,"' and Start = ",updat$Start," and End = ",updat$End,sep="")
+q8= paste("Update tblVegTransectPctCover Set Bare = '",updat$Bare,"' where TransectID = '",updat$TransectID,"' and HabitatType = '",updat$HabitatType,"' and Start = ",updat$Start," and End = ",updat$End,sep="")
+
+sqlQuery(yrb,q1)
+sqlQuery(yrb,q2)
+sqlQuery(yrb,q3)
+sqlQuery(yrb,q4)
+sqlQuery(yrb,q5)
+sqlQuery(yrb,q6)
+sqlQuery(yrb,q7)
+sqlQuery(yrb,q8)
+}uj

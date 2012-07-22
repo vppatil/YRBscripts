@@ -1,0 +1,181 @@
+
+#first load the rodbc package
+library(RODBC)
+
+
+#next 2 odbc connections are created, called yrb and yrb2011
+yrb<-odbcConnectAccess2007('c:/users/vppatil/desktop/yrb/YRBiodiversity.accdb')
+yrb2011<-odbcConnectAccess2007('C:/users/vppatil/dropbox/alaskafiles/2011 datasheets protocols/2011YRBiodiversity.accdb')
+
+
+#species accumulation curve in twenty minutes
+
+#first get Hab Zone Widths by Habitat for all Transects from PctCover
+names(sqlFetch(yrb2011,'tblVegTransectSppList'))
+
+spp<-sqlFetch(yrb2011,'tblVegTransectSppList')
+
+
+hablengths<-sqlQuery(yrb2011,"select TransectID,HabitatType,HabitatTypeLength from tblVegTransectPctCover")
+Richness<-sqlQuery(yrb2011,"select Bearing,LakeID,count(Species) as sppCount from (select Bearing,LakeID,Species,GS from tblVegTransectSppList where GS = 'TRUE') group by LakeID,Bearing")
+
+Richness$TransectID<-paste(Richness$Bearing,Richness$LakeID,sep='_')
+names(sqlFetch(yrb2011,'tblVegTransectSppList'))
+
+hablengths<-subset(hablengths,hablengths$HabitatType=='GS')
+Curvedat<-merge(hablengths,Richness,by='TransectID')
+Curvedat<-Curvedat[Curvedat$HabitatTypeLength<200,]
+
+plot(Curvedat$HabitatTypeLength,Curvedat$sppCount)
+
+#PCA
+PCA<-sqlFetch(yrb2011,'PCAmeans')[,-1]
+PCA<-PCA[-c(27,52),]
+
+
+st<-table(spp$LakeID,spp$Species)
+dim(st)
+st<-st
+
+a<-vegdist(st)
+
+
+PCA[PCA<0] = 0
+#need to make some summary plots
+
+#first review what you have in terms of pca dat
+pcanames<-names(sqlFetch(yrb2011,'PCAdat'))#no richness data
+
+spp<-sqlFetch(yrb2011,'tblVegTransectSppList',stringsAsFactors=TRUE)
+spp$Stratum<-substr(spp$LakeID,1,1)
+
+	spp$GS[spp$GS=='x']='TRUE'
+	spp$GS[spp$GS=='']='FALSE'
+	spp$LS[spp$LS=='x']='TRUE'
+	spp$LS[spp$LS=='']='FALSE'
+	spp$TS[spp$TS=='x']='TRUE'
+	spp$TS[spp$TS=='']='FALSE'
+		spp$TS[spp$TS=="'"]='FALSE'
+
+	spp$DT[spp$DT=='x']='TRUE'
+	spp$DT[spp$DT=='']='FALSE'
+	spp$DF[spp$DF=='x']='TRUE'
+	spp$DF[spp$DF=='']='FALSE'
+	spp$MF[spp$MF=='x']='TRUE'
+	spp$MF[spp$MF=='']='FALSE'
+	spp$CF[spp$CF=='x']='TRUE'
+	spp$CF[spp$CF=='']='FALSE'
+	spp$AQ[spp$AQ=='x']='TRUE'
+	spp$AQ[spp$AQ=='']='FALSE'
+	spp$FM[spp$FM=='x']='TRUE'
+	spp$FM[spp$FM=="  "]='FALSE'
+	spp$FM[spp$FM=='']='FALSE'
+	spp$MU[spp$MU=='x']='TRUE'
+	spp$MU[spp$MU=='']='FALSE'
+	spp$EM[spp$EM=='x']='TRUE'
+	spp$EM[spp$EM=='']='FALSE'
+	spp$Other[spp$Other=='x']='TRUE'
+	spp$Other[spp$Other=='']='FALSE'
+	spp<-subset(spp,spp$LakeID!='y')
+	
+	
+sqlSave(yrb2011,spp,'cleanSppTemp')
+#sqlQuery(yrb2011,'drop table cleanSppTemp')
+
+	
+#species richness by stratum
+
+spp.counts<-sqlQuery(yrb2011,"select Bearing,LakeID,Stratum,count(Species) as Sppnum from cleanSppTemp  group by Stratum,LakeID,Bearing")
+
+spp.avgs<-sqlQuery(yrb2011,"select LakeID,Stratum,avg(Sppnum) as AvgSpp from (select Bearing,LakeID,Stratum,count(Species) as Sppnum from cleanSppTemp group by Stratum,LakeID,Bearing) group by Stratum,LakeID")
+spp.avgs<-sqlQuery(yrb2011,"select LakeID,Stratum,avg(Sppnum) as AvgSpp from (select Bearing,LakeID,Stratum,count(Species) as Sppnum from cleanSppTemp group by Stratum,LakeID,Bearing) group by Stratum,LakeID")
+spp.avgs<-sqlQuery(yrb2011,"select Stratum,avg(Sppnum) as AvgSpp from (select LakeID,Stratum,count(Species) as Sppnum from (select (LakeID,distinct Species from cleanSppTemp) group by Stratum,LakeID) group by Stratum")
+
+
+GS.dif<-sqlQuery(yrb2011,"select Stratum,avg(sppNum) as avgTotSpp from (select LakeID,Stratum,count(Species) as sppNum from (select distinct Species,LakeID,Stratum from tblVegTransectSppList where GS = 'TRUE') group by Stratum,LakeID) group by Stratum")
+
+
+GS.se<-sqlQuery(yrb2011,"select Stratum,stdev(sppNum)/count(sppNum) as seTotSpp from (select LakeID,Stratum,count(Species) as sppNum from (select distinct Species,LakeID,Stratum from tblVegTransectSppList where GS = 'TRUE') group by Stratum,LakeID) group by Stratum")
+
+CF.dif<-sqlQuery(yrb2011,"select Stratum,avg(sppNum) as avgTotSpp from (select LakeID,Stratum,count(Species) as sppNum from (select distinct Species,LakeID,Stratum from tblVegTransectSppList where CF = 'TRUE') group by Stratum,LakeID) group by Stratum")
+
+LS.dif<-sqlQuery(yrb2011,"select Stratum,avg(sppNum) as avgTotSpp from (select LakeID,Stratum,count(Species) as sppNum from (select distinct Species,LakeID,Stratum from tblVegTransectSppList where LS = 'TRUE') group by Stratum,LakeID) group by Stratum")
+
+TS.dif<-sqlQuery(yrb2011,"select Stratum,avg(sppNum) as avgTotSpp from (select LakeID,Stratum,count(Species) as sppNum from (select distinct Species,LakeID,Stratum from tblVegTransectSppList where TS = 'TRUE') group by Stratum,LakeID) group by Stratum")
+
+DT.dif<-sqlQuery(yrb2011,"select Stratum,avg(sppNum) as avgTotSpp from (select LakeID,Stratum,count(Species) as sppNum from (select distinct Species,LakeID,Stratum from tblVegTransectSppList where DT = 'TRUE') group by Stratum,LakeID) group by Stratum")
+
+DF.dif<-sqlQuery(yrb2011,"select Stratum,avg(sppNum) as avgTotSpp from (select LakeID,Stratum,count(Species) as sppNum from (select distinct Species,LakeID,Stratum from tblVegTransectSppList where DF = 'TRUE') group by Stratum,LakeID) group by Stratum")
+
+MF.dif<-sqlQuery(yrb2011,"select Stratum,avg(sppNum) as avgTotSpp from (select LakeID,Stratum,count(Species) as sppNum from (select distinct Species,LakeID,Stratum from tblVegTransectSppList where MF = 'TRUE') group by Stratum,LakeID) group by Stratum")
+
+FM.dif<-sqlQuery(yrb2011,"select Stratum,avg(sppNum) as avgTotSpp from (select LakeID,Stratum,count(Species) as sppNum from (select distinct Species,LakeID,Stratum from tblVegTransectSppList where FM = 'TRUE') group by Stratum,LakeID) group by Stratum")
+
+MU.dif<-sqlQuery(yrb2011,"select Stratum,avg(sppNum) as avgTotSpp from (select LakeID,Stratum,count(Species) as sppNum from (select distinct Species,LakeID,Stratum from tblVegTransectSppList where MU = 'TRUE') group by Stratum,LakeID) group by Stratum")
+
+EM.dif<-sqlQuery(yrb2011,"select Stratum,avg(sppNum) as avgTotSpp from (select LakeID,Stratum,count(Species) as sppNum from (select distinct Species,LakeID,Stratum from tblVegTransectSppList where EM = 'TRUE') group by Stratum,LakeID) group by Stratum")
+
+AQ.dif<-sqlQuery(yrb2011,"select Stratum,avg(sppNum) as avgTotSpp from (select LakeID,Stratum,count(Species) as sppNum from (select distinct Species,LakeID,Stratum from tblVegTransectSppList where AQ = 'TRUE') group by Stratum,LakeID) group by Stratum")
+
+Forest.dif<-sqlQuery(yrb2011,"select Stratum,avg(sppNum) as avgTotSpp from (select LakeID,Stratum,count(Species) as sppNum from (select distinct Species,LakeID,Stratum from tblVegTransectSppList where CF = 'TRUE' OR MF= 'TRUE' OR DF = 'TRUE') group by Stratum,LakeID) group by Stratum")
+
+
+CF.se<-sqlQuery(yrb2011,"select Stratum,stdev(sppNum)/count(sppNum) as seTotSpp from (select LakeID,Stratum,count(Species) as sppNum from (select distinct Species,LakeID,Stratum from tblVegTransectSppList where CF = 'TRUE') group by Stratum,LakeID) group by Stratum")
+
+LS.se<-sqlQuery(yrb2011,"select Stratum,stdev(sppNum)/count(sppNum) as seTotSpp from (select LakeID,Stratum,count(Species) as sppNum from (select distinct Species,LakeID,Stratum from tblVegTransectSppList where LS = 'TRUE') group by Stratum,LakeID) group by Stratum")
+
+TS.se<-sqlQuery(yrb2011,"select Stratum,stdev(sppNum)/count(sppNum) as seTotSpp from (select LakeID,Stratum,count(Species) as sppNum from (select distinct Species,LakeID,Stratum from tblVegTransectSppList where TS = 'TRUE') group by Stratum,LakeID) group by Stratum")
+
+DT.se<-sqlQuery(yrb2011,"select Stratum,stdev(sppNum)/count(sppNum) as seTotSpp from (select LakeID,Stratum,count(Species) as sppNum from (select distinct Species,LakeID,Stratum from tblVegTransectSppList where DT = 'TRUE') group by Stratum,LakeID) group by Stratum")
+
+DF.se<-sqlQuery(yrb2011,"select Stratum,stdev(sppNum)/count(sppNum) as seTotSpp from (select LakeID,Stratum,count(Species) as sppNum from (select distinct Species,LakeID,Stratum from tblVegTransectSppList where DF = 'TRUE') group by Stratum,LakeID) group by Stratum")
+
+MF.se<-sqlQuery(yrb2011,"select Stratum,stdev(sppNum)/count(sppNum) as seTotSpp from (select LakeID,Stratum,count(Species) as sppNum from (select distinct Species,LakeID,Stratum from tblVegTransectSppList where MF = 'TRUE') group by Stratum,LakeID) group by Stratum")
+
+FM.se<-sqlQuery(yrb2011,"select Stratum,stdev(sppNum)/count(sppNum) as seTotSpp from (select LakeID,Stratum,count(Species) as sppNum from (select distinct Species,LakeID,Stratum from tblVegTransectSppList where FM = 'TRUE') group by Stratum,LakeID) group by Stratum")
+
+MU.se<-sqlQuery(yrb2011,"select Stratum,stdev(sppNum)/count(sppNum) as seTotSpp from (select LakeID,Stratum,count(Species) as sppNum from (select distinct Species,LakeID,Stratum from tblVegTransectSppList where MU = 'TRUE') group by Stratum,LakeID) group by Stratum")
+
+EM.se<-sqlQuery(yrb2011,"select Stratum,stdev(sppNum)/count(sppNum) as seTotSpp from (select LakeID,Stratum,count(Species) as sppNum from (select distinct Species,LakeID,Stratum from tblVegTransectSppList where EM = 'TRUE') group by Stratum,LakeID) group by Stratum")
+
+AQ.se<-sqlQuery(yrb2011,"select Stratum,stdev(sppNum)/count(sppNum) as seTotSpp from (select LakeID,Stratum,count(Species) as sppNum from (select distinct Species,LakeID,Stratum from tblVegTransectSppList where AQ = 'TRUE') group by Stratum,LakeID) group by Stratum")
+
+Forest.se<-sqlQuery(yrb2011,"select Stratum,stdev(sppNum)/count(sppNum) as seTotSpp from (select LakeID,Stratum,count(Species) as sppNum from (select distinct Species,LakeID,Stratum from tblVegTransectSppList where CF = 'TRUE' OR MF= 'TRUE' OR DF = 'TRUE') group by Stratum,LakeID) group by Stratum")
+
+
+spp.forR<-sqlQuery(yrb2011,"select LakeID,Stratum,count(Species) as sppNum from (select distinct Species,LakeID,Stratum from tblVegTransectSppList) group by Stratum,LakeID")
+
+
+#find duplicates
+spp.dup.test<-subset(spp,select=c('LakeID','Bearing','Species'))
+spp.dups<-duplicated(spp.dup.test)
+check<-spp[spp.dups,])
+spp$dup=0
+spp$dup[spp.dups]=1
+check[order(check$LakeID,check$Species),]
+
+head(spp[order(spp$LakeID,spp$Species,spp$dup),],1000)
+
+duplicates
+
+sqlQuery(
+
+spp.listsqlQuery(yrb2011,"select distinct Species from tblVegTransectSppList")
+spp.list<-cbind(unique(as.character(spp$Species)))
+
+terr.spp<-sqlQuery(yrb2011,"select * from tblVegTransectSppList where AQ='FALSE' AND EM = 'FALSE' and MU = 'FALSE' and FM = 'FALSE' and Species not in ('','moss','Moss','lichen','Lichen','peltigera','Peltigera')")
+
+terr.spp$Strat<-substr(terr.spp$LakeID,1,1)
+Strat.West<-length(unique(terr.spp$Species[terr.spp$Strat=='0']))
+Strat.East<-length(unique(terr.spp$Species[terr.spp$Strat=='0']))
+
+bad.list=c('moss','Moss','lichen','Lichen','peltigera','Peltigera')
+
+
+nonvasc<-c(grep(bad.list[1],spp.list),grep(bad.list[2],spp.list),grep(bad.list[3],spp.list),grep(bad.list[4],spp.list),grep(bad.list[5],spp.list),grep(bad.list[6],spp.list))
+goodspp<-spp.list[-nonvasc]
+
+
+#remove aquatics, moss,lichen,peltigera
+
+

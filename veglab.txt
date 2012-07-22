@@ -1,0 +1,50 @@
+#vegtrans
+- replaces cover codes with values
+#in labdsv
+
+#get sum of transects where each species occurs
+
+library(RODBC)
+
+db<-odbcConnectAccess2007('c:/users/vppatil/dropbox/alaskafiles/2011 datasheets protocols/2011YRBiodiversity.accdb')
+old<-odbcConnectAccess2007('c:/users/vppatil/desktop/yrb/YRBiodiversity.accdb')
+
+#now make spp.table
+spp<-sqlFetch(db,'tblVegTransectSppList')
+spp$TID<-paste(spp$LakeID,spp$Bearing,sep='_')
+spp.t<-table(spp$TID,spp$Species)
+spp.t<-ifelse(spp.t>0,1,spp.t)
+spp.t<-apply(spp.t,2,sum)
+spp.t<-spp.t[spp.t>0]
+
+spp.cdf<-sort(spp.t)
+plot(spp.cdf,xlab='Number of Species',ylab='Number of Plots where occuring',main='CDF of species presence by transect')
+plot(spp.cdf,log='y')	
+plot(spp.t,spp
+
+
+
+library(labdsv)
+#now get mean cover
+#first read in cover data and replace classes with numbers
+cov<-sqlFetch(db,'tblVegTransectPctCover',stringsAsFactors=FALSE)
+names(cov)
+#cov cols are 6:16
+cov.classes<-cov[,6:16]
+cov.classes[is.na(cov.classes)]='-'
+cov.classes[cov.classes=='']='-'
+cov.classes[cov.classes=='1.5']='1'
+
+
+
+?vegtrans
+
+#code table
+codes<-sqlFetch(old,'tblVegPctCoverCodes',stringsAsFactors=FALSE)
+codes[6,1]='-'
+codes$start=c(1,10,25,50,75,0,.001)
+codes$end=c(10,25,50,75,100,0,1)
+codes$mid<-(codes$end-codes$start)/2
+
+cov.classes<-vegtrans(cov.classes,codes$VegPerCover,codes$mid)
+

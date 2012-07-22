@@ -1,0 +1,8 @@
+yearline<-grep('1998',test[,1])
+#yearline is the line on which the year appears
+#it is followed by a number that looks like a month
+month<-test[yearline,2]
+#there are 707 rows for every month
+#706 columns. why not 707?
+
+

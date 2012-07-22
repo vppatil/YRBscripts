@@ -1,0 +1,70 @@
+dm.conv<-function(deg,min)
+{
+  #convert degrees minutes to dec.deg
+  dec<-min/60
+  dd<-deg+dec
+  return (dd)
+}
+
+#lat lon km distance conversion function
+
+# Convert degrees to radians
+deg2rad <- function(deg) return(deg*pi/180)
+
+gcd.slc <- function(long1, lat1, long2, lat2) {
+  long1<-deg2rad(long1)
+  long2<-deg2rad(long2)
+  lat1<-deg2rad(lat1)
+  lat2<-deg2rad(lat2)
+  R <- 6371 # Earth mean radius [km]
+  d <- acos(sin(lat1)*sin(lat2) + cos(lat1)*cos(lat2) * cos(long2-long1)) * R
+  return(d) # Distance in km
+}
+
+
+#pika camp is at 138 16' W, 61d 13' N
+
+#north pole is at 0 W,90N
+
+lat1<-90
+lon1<-0
+
+lat2<-dm.conv(61,13)
+lon2<-dm.conv(138,16)
+
+pika.np<-gcd.slc(lon1,lat1,lon2,lat2)
+#now sort out dist 
+
+coords<-read.csv('C:/users/vijay/documents/my dropbox/alaskafiles/cmcLatLon.csv')
+
+
+euclid<-function(lat1,lon1,lat2,lon2)
+{
+	x = lat1-lat2
+	y = lon1-lon2
+	dist = sqrt((x^2)+(y^2))
+	return (dist)
+}
+
+lats<-coords$Lat[1]
+lons<-coords$Lon[1]
+
+dist<-euclid(lats,lat2,lons,lon2)
+
+lat2=61.2667
+lon2=138.2667
+
+lat.dist<-coords$Lat>=61&coords$Lat<=62
+lon.dist<-coords$Lon>=138&coords$Lon<=139
+
+range=coords[lat.dist&lon.dist,]
+
+coord.dist<-gcd.slc(range$Lon,range$Lat,lon2,lat2)
+good.range<-range[coord.dist<25,]
+good.range<-cbind(good.range,coord.dist[coord.dist<25])
+
+#points 1 and 2 are closest
+#i 253,474
+#i 254,474
+
+

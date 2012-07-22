@@ -1,0 +1,21 @@
+
+yrb<-odbcConnectAccess2007('c:/users/vppatil/desktop/yrb/yrbiodiversity.accdb')
+
+query="select distinct transectid from tblvegtransectspplist where transectid like '%_1_90_3' and fm = 0 and aq = 0 and em = 0 and mu = 0"
+sqlQuery(yrb,query) 
+
+
+ s<-sample(1:127,5,replace=FALSE)
+ lakes<-sqlQuery(yrb,"select distinct lakeid from tblTransects")[s,]
+ 
+ get qaqc
+ 
+ 1_33_1
+ 0_32_2
+ 0_8_1
+ 0_97_3
+ 1_90_3
+ 
+ 
+0_30_2 1_27_2 1_48_2 1_63_4 1_26_1
+1_26_1 0_28_1 1_58_1 1_63_5 0_8_2 

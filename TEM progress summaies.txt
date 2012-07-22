@@ -1,0 +1,3 @@
+library(RODBC)
+yrb<-odbcConnectAccess2007('c:/users/vppatil/dropbox/alaskafiles/2011 datasheets protocols/2011YRBiodiversity.accdb')
+sqlQuery(yrb,"select * from tblVegTransectMetadata where TransectID like '%0_2_%'")

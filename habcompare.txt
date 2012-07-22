@@ -1,0 +1,108 @@
+objectives
+
+1) get table with lakeid, transectid, habtype,start,end-kay
+2) recalc length-done
+3) may need to just pull transectid, extract lake
+4) get num habs by transect-done
+5) get shannon index by transect-done
+6) get size of each hab type by transect-done
+7) get number of shoreline hits per habitat type-done
+8) get proportion of transect occupied by habitat type (6/total transectlength)-
+9) get total transect length-done
+9.5) get floating mat width
+10) get means for everything across transects by lake
+
+#use hab.all
+
+
+new<-odbcConnectAccess2007('C:/users/vppatil/dropbox/alaskafiles/2011 datasheets protocols/2011YRBiodiversity.accdb')
+old<-odbcConnectAccess2007('C:/users/vppatil/desktop/yrb/YRBiodiversity.accdb')
+
+#table called 'habAlltemp')
+
+habAll<-sqlFetch(new,'habAlltemp')
+#habAll$habitattype<-ifelse(habAll$habitattype == 'CF/LS','LS/CF',habAll$habitattype)
+
+#send old metadata to new database for use in fm calcs.
+oldmeta<-sqlFetch(old,'tblVegTransectMetadata')
+sqlSave(new,oldmeta,'oldMetatemp')
+
+#get num habs by transect
+numhabs<-sqlQuery(new,"select transectid,count(habitattype) as HabNum from habAlltemp group by transectid")
+
+#get shannon index by transect
+Shannon.func<-function(hab.df)
+{
+	length.vector<-hab.df$habitattypelengths
+	pi.vec<-length.vector/sum(length.vector)
+	shannon<-sum(pi.vec*log(pi.vec))*-1
+	return(shannon)
+}
+
+transects<-unique(numhabs$transectid)
+
+hab.list<-list()
+for (i in 1:length(transects))
+{
+	hab.list[[i]]=subset(habAll,habAll$transectid==transects[i])
+}
+
+num.func<-function(hab)
+{
+	num<-dim(hab)[1]
+}
+
+shannon<-data.frame(transectid=numhabs$transectid,shannon=sapply(hab.list,Shannon.func))
+
+habs<-unique(habAll$habitattype)
+
+hablength<-sqlQuery(yrb,"select transectid,habitattype,sum(habitattypelengths) as totallengths from habAlltemp group by transectid,habitattype")
+#loop to get lengths for all hab types
+hab.length.df<-data.frame()
+
+
+#get hab lengths for all Habs for each transect
+
+xtabs_2_dataframe <- function(aa){
+	# figure out column names that are originally used in the xtabs call
+	nm_tmp <- attributes(dimnames(aa))$names
+	if(length(nm_tmp) != 2){
+	# this function only handles 2 dimension xtabs object
+	cat('Error: the input xtabs object has to have at most 2 dimensions!\n')
+	#return(NULL)
+	} else {
+	bb <- as.data.frame.matrix(aa)
+
+	# playing aroun d
+	colnames(bb) <- paste(nm_tmp[2], colnames(aa), sep='_')
+	bb$newcol <- dimnames(bb)[[1]]
+	colnames(bb)[ncol(bb)] <- nm_tmp[1]
+	rownames(bb) <- NULL
+
+	cc=data.frame(bb[, ncol(bb)], bb[, 1:(ncol(bb)-1) ], stringsAsFactors = F)
+	colnames(cc)[1]=nm_tmp[1]
+	return(cc)
+} } 
+
+hablengths.tab<-xtabs(habitattypelength~transectid+habitattype,data=habAll)
+hablengths.df<-xtabs_2_dataframe(hablengths.tab)
+names(hablengths.df)<-c('transectid',as.character(habs))
+
+#now get shoreline type for each transect
+shorehab<-sqlQuery(yrb,"select transectid,habitattype from (select transectid,habitattype,Start from tblvegtransectpctcover where Start=0)")
+
+#get total transect length per transect
+transectlengths<-sqlQuery(new,"select transectid,sum(habitattypelengths) as transectlengths from habAlltemp group by transectid")
+
+#maybe need to do some cleaning/postprocessing here- get the habitat type widths constrained to 100m?
+
+#######FM width
+newFM<-sqlQuery(new,"select transectid,FM from tblVegTransectMetadata",stringsAsFactors=FALSE)
+oldFM<-sqlQuery(old,"select transectid,FM_w as FM from tblVegTransectMetadata",stringsAsFactors=FALSE)
+
+old.diff<-which(!(oldFM$transectid %in%newFM$transectid))
+oldFM<-oldFM[old.diff,]
+
+FMwidths<-rbind(newFM,oldFM)
+
+

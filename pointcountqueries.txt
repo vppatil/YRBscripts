@@ -1,0 +1,34 @@
+NumIndObs
+SpCode
+PCID
+
+
+
+in tblPointCounts
+
+PCID,LakeID in tblPointCountMetadata
+
+how many point counts were there per lake
+how many point counts was a species detected per lake
+
+select count(PCID) as NumPC,LakeID from tblPointCountMetadata group by LakeID
+
+library(RODBC)
+setwd('C:/users/vijay/desktop/yrb/')
+yrb<-odbcConnectAccess2007('YRBiodiversity.accdb')
+
+temp<-sqlQuery(yrb,"SELECT tblPointCounts.*, tblPointCountMetadata.LakeID FROM tblPointCountMetadata INNER JOIN tblPointCounts ON tblPointCountMetadata.PCID = tblPointCounts.PCID")
+
+sqlSave(yrb,dat=temp,tablename='pcCodes')
+
+#number of species detected per point count
+species.per.pc<-sqlQuery(yrb,"select count(SpCode) as pcDetections,PCID,LakeID from pcCodes group by PCID,LakeID")
+	
+#number of point counts on which a species was detected, by lake
+pc.per.spp<-sqlQuery(yrb,"select distinct(PCID),SpCode,LakeID from pcCodes group by SpCode,LakeID")
+
+test<-sqlQuery(yrb,"select count(PCID) as numPCs,SpCode,LakeID  from (select distinct(PCID) ,SpCode,LakeID from pcCodes) group by SpCode,LakeID")
+
+names<-sqlQuery(yrb,"describe tblVegTransectSppList")
+
+yrb2011<-odbcConnectAccess2007('c:/users/vijay/documents/my dropbox/alaskafiles/2011 datasheets protocols/2011YRBiodiversity.accdb')

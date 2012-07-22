@@ -1,0 +1,14 @@
+
+
+
+m.q<-"select tblMammalVegSppList.TrapID,tblMammalVegSppList.VegSpecies,tblMammalTrapChecks.GridID,tblMammalTrapTraits.HabitatType1 from tblMammalVegSppList inner join tblMammalTrapTraits on tblMammalVegSppList.TrapID = tblMammalTrapTraits.TrapID"
+
+test<-sqlQuery(yrb,m.q)
+
+#next is to get species richness for each trap
+
+mrich<-"select GridID,TrapID,HabitatType1,count(VegSpecies) as sppCount from (select distinct VegSpecies,GridID,TrapID,HabitatType1 from (select tblMammalVegSppList.TrapID,tblMammalVegSppList.VegSpecies,tblMammalTrapChecks.GridID,tblMammalTrapTraits.HabitatType1 from tblMammalVegSppList inner join tblMammalTrapTraits on tblMammalVegSppList.TrapID = tblMammalTrapTraits.TrapID))"
+
+test2<-"select GridID,TrapID,HabitatType1,count(VegSpecies) as sppCount from (select distinct VegSpecies,GridID,TrapID,HabitatType1 from (select tblMammalVegSppList.TrapID,tblMammalVegSppList.VegSpecies,tblMammalTrapTraits.GridID,tblMammalTrapTraits.HabitatType1 from tblMammalVegSppList inner join tblMammalTrapTraits on tblMammalVegSppList.TrapID = tblMammalTrapTraits.TrapID)) group by GridID,TrapID,HabitatType1"
+
+a<-sqlQuery(yrb,test2)

@@ -1,0 +1,27 @@
+library(RODBC)
+
+old<-odbcConnectAccess2007('C:/users/vijay/desktop/yrb/YRBiodiversity.accdb')
+new<-odbcConnectAccess2007('C:/users/vijay/documents/my dropbox/alaskafiles/2011 datasheets protocols/2011YRBiodiversity.accdb')
+
+
+#get the two PctCover tables
+old.pctcov<-sqlFetch(old,'tblVegTransectPctCover')
+new.pctcov<-sqlFetch(new,'tblVegTransectPctCover')
+
+hab.func<-function(df)
+{
+	df<-subset(df,select=c('TransectID','HabitatType','HabitatTypeLength'))
+	return.df
+}
+
+old<-hab.func(old.pctcov)
+new<-hab.func(new.pctcov)
+
+#shannon function
+#requires a vector of the lengths for each habitat  (n sub i)
+#will have to be applied to each lake
+Shannon.func<-function(ni.vec){
+	ni<-ni.vec[ni.vec>0]
+	pi.vec<-ni/sum(ni)
+	shannon<-sum(pi.vec*log(pi.vec))*-1
+	return(shannon)}

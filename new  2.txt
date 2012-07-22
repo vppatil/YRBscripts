@@ -1,0 +1,8 @@
+ setwd('C:/users/sam/desktop/')
+ mark<-read.csv('studylakes_wgs84.csv')
+library(shapefiles)
+
+mark.table<-data.frame(ID = mark$ID,X = mark$POINT_X,Y=mark$POINT_Y)
+	
+markshp<-convert.to.shapefile(mark,mark.table,'ID',1)
+write.shapefile(markshp,"c:/users/sam/desktop/yrb_gis/marklakes",arcgis = T)

@@ -1,0 +1,82 @@
+Min chen
+los alamos
+lwb
+mdt
+closed basin themokast
+
+todo
+
+-register for classes: c++, brad's class, look at skip walker.-done.
+cs202: crn: 35448
+wlf692- not listed
+biol692- 40841
+
+
+-FOUND KEYS!!!!
+
+-track down lake change lady-done ish
+-contact mark re: soil samples-done
+-ben: elemental analyses-done
+-dana: soil balance/lter stuff-done
+-photocopy abstract, return to eugenie-done
+
+-come up with questions for ESA stuff
+-gmw fellowship app
+-get some preliminary data in.
+
+	enter tree and shrub data
+	compare pca to lake area? to lake change estimates?
+	what about species richness data?
+	compare soil moisture to other lake variables, to plant community structure
+	come up with list of parameter estimates
+	Friday = start some soil samples drying, put in oven. 
+	
+	tonight- get sponsor, abstract stuff sorted out. Outline budget needs, look over methods
+		   - paper comments starting at 7pm.
+	maybe get what's his name working on entering species richness data.
+	get him started sorting tem samples first, naturally.- there are fewer of them anyway.
+
+look at list of 12 vital signs, pitch towards that.-done
+	
+	
+-paper edits
+-interface listserv
+-brad balance buying
+
+-get tem lakes soil processed
+-get keys from jamie
+
+-get soil moisture datasheets-done
+-get biomass datasheets
+-TEM parameterization
+
+tem lakes:
+1-99-1,1-99-2,0-2-1,0-2-2,
+0_9_1, 0_9_2, 1_58_1, 0_2_1, and 0_2_2.. also 1_27_1 from last year?
+
+TEMlakes-table
+-send out doodle poll for Committee Meeting-done
+
+-lake area change estimates?
+
+library(RODBC)
+yrb<-odbcConnectAccess2007('c:/users/vppatil/dropbox/alaskafiles/2011 datasheets protocols/2011YRBiodiversity.accdb')
+sqlQuery(yrb,"select * from tblVegTransectMetadata where TransectID like '%0_2_%'")
+
+brad questions
+- show abstract-okay
+- ask about buying balance
+- seminar series
+- yfnwr liason-done
+- pitching app to sound like something parks would want.
+- goals for data collection
+
+- need preliminary data- get tree and shrub densities for those sites
+					   - get species richness data
+					   - hab structure data
+					   - model hab stuff as response to lake characteristics
+					   - model species data as a function of hab zone width or pca.
+					   
+					   - put together some kind of pretty plot of the study area- easy.
+					   -identify some stable/fluctuating lakes to compare.
+					   

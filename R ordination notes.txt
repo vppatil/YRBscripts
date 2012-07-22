@@ -1,0 +1,36 @@
+vegan.r ordination notes
+
+vegan also has packages for biodiversity analyses including species accumulation curves.
+
+to look up: 
+NMDS
+
+cluster analysis:
+
+function decorana()
+
+pca:
+
+use vegdist to calc vegetation dissimilarity indices
+
+also separate out using machine learning algorithims- tree cutoffs?
+	
+vegan- metaMDS- converge on nmds solution using multiple random starts
+
+envfit- fit environmental vectors to nmds gradients
+
+ordisurf- fit surfaces of environmental variables to ordination
+- could do this for species richness?
+
+
+cca- canonical correspondence analysis
+
+pca done in func rda package vegan
+
+also princomp package stats
+
+varespec- pctcover data for species
+
+so you could make a table of mean habitat widths for all habs and all lakes
+ same for species presence/absence
+ ;

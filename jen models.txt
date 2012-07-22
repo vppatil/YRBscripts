@@ -1,0 +1,36 @@
+
+Here are some excerpts from my SAS code:
+
+pooled variance regression:
+dm 'clear log';
+dm 'clear output';
+proc glm data=togiakfin;
+class subject ;
+model lnwater =  subject year sday yearnew*subject sday*subject
+  /  solution ;
+ods output ParameterEstimates = fixed;
+run;
+
+pooled variance regression 'noint':
+dm 'clear log';
+dm 'clear output';
+proc glm data=togiakfin;
+class subject ;
+model lnwater =  subject yearnew*subject sday*subject
+  /  noint solution ;
+ods output ParameterEstimates = fixed;
+run;
+
+individual regressions:
+dm 'clear log';
+dm 'clear output';
+proc sort data=togiakfin;
+by subject;
+run;
+proc mixed data=togiakfin;
+class subject newtrans;
+by subject;
+model lnwater = yearnew sday
+  /  solution outp = fitspreds ;
+ods output solutionF=fixedind;
+run; 

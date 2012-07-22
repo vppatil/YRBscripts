@@ -1,0 +1,21 @@
+Tuesday night
+
+1) figure out how many lakes from 2010 and 2011 are left-done
+
+2) write a script to merge the habitat data into one file-done
+3) calc number of habitats by lake-done
+3) calc habitat shannon diversity index by lake-done
+
+
+4) merge in lake size and lake area change-done
+5) plot the two-done
+6) try to plot some kind of spatial autocorrelation thingy-done
+
+7) make a list() of bathymetry table sections for each transect
+8) find some way to calculate a bathymetry profile index
+9) calculate average depth per transect
+
+10) will need to extract all records of the word frog from my veg notes
+
+11) 
+

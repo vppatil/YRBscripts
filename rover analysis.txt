@@ -1,0 +1,49 @@
+#lakes
+
+#by subject
+#year, day of summer regression
+#extract residuals
+#look to see if log transformation necessary
+
+setwd('c:/users/vppatil/desktop/yrb_gis')
+rover<-read.csv('Rover_all_eqns.csv',header=TRUE) 	 	
+
+library(shapefiles)
+rov.join<-read.dbf('yrb_sample_roverjoin.dbf',header=TRUE)$dbf
+
+#year names:
+
+areas<-c('.1979_5','.1981_8','.1983_5','.1985_9','.1986_5','.1986_6','.1986_7','.1994_5','.1994_9','.1999_7','.1999_8','.2000_6','.2000_7','.2002_7','.2003_5','.2005_6','.2007_8','.2008_5','.2009_5','.2009_7')
+
+names(rov.join)[19:38]=areas
+test<-rov.join[,c(4,19:38)]
+
+rov.stack<-stack(test,-LakeID)
+rov.stack<-cbind(LakeID = rep(rov.join$LakeID,20),rov.stack)
+
+#rov.stack can be used- split ind into year and month
+rov.stack$year<-as.numeric(substr(rov.stack$ind,2,5))
+rov.stack$month<-as.numeric(substr(rov.stack$ind,7,7))
+rov.stack$values[rov.stack$values<0]=NA
+
+lake.glm<-function(x,formula) return(glm(formula,data=x,na.action=na.omit))
+sub=subset(rov.stack,rov.stack$LakeID == '1_28_1')
+
+rov.glms<-by(rov.stack,rov.stack$LakeID,lake.glm,values~year+month)
+rov.summaries<-lapply(rov.glms,summary)
+
+lakes<-unique(rov.stack$LakeID)
+ps<-sapply(rov.summaries,function(x) return (x$coefficients[2,4])
+shrinks<-lakes[ps<0.05]
+shrink.data<-subset(rov.stack,rov.stack$LakeID %in% shrinks)
+
+shrink.data$LakeID<-factor(shrink.data$LakeID)
+par(mfcol=c(3,3))
+by(shrink.data,shrink.data$LakeID,function(x)plot(x$year,x$values))
+
+cbind(shrinks,ps)[ps<0.05,]
+#still need to extract residuals
+
+sub<-subset(rov.stack,rov.stack$LakeID == '1_27_1')
+
+sub.glm<-lake.glm(sub,values~month+year)

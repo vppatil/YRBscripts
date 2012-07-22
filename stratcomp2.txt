@@ -1,0 +1,41 @@
+#stratcomp
+means<-sqlFetch(yrb2011,'PCAmeans')
+means$strat<-substr(means$LakeID,1,1)
+means0<-means[means$strat=='0',]
+means1<-means[means$strat=='1',]
+
+PCA<-sqlFetch(yrb2011,'PCAdat')
+
+
+PCA$strat<-substr(PCA$LakeID,1,1)
+PCA0<-PCA[PCA$strat=='0',]
+PCA1<-PCA[PCA$strat=='1',]
+
+t.mean<-tapply(means$avgtransectLength,means$strat,mean)
+h.mean<-tapply(means$avgHabNum,means$strat,mean)
+s.mean<-tapply(means$avgshannon,means$strat,mean,na.action=na.omit)
+
+g.mean<-tapply(means$avgGS,means$strat,mean)
+g.se<-tapply(means$avgGS,means$strat,se)
+
+ls.mean<-tapply(means$avgLS,means$strat,mean)
+
+ts.mean<-tapply(means$avgTS,means$strat,mean)
+ls.se<-tapply(means$avgLS,means$strat,function(x) sd(x)/length(x))
+
+se<-function(x) sd(x)/length(x)
+CF.mean<-tapply(means$avgCF,means$strat,mean)
+CF.se<-tapply(means$avgCF,means$strat,function(x) sd(x)/length(x))
+
+
+t.test(means0$avgGS,means1$avgGS)
+hist(mt.test(means0$avgMF,means1$avgMF)
+
+
+
+library(rpart)
+update.packages('rpart')
+
+l<-rpart(LakeID~avgGS+avgtransectLength+avgCF+avgLS,data=means,method='class')	plot
+
+p<-prcomp(~avgGS+avgLS+avg

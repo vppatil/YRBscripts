@@ -1,0 +1,25 @@
+	library(RODBC)
+yrb2011<-odbcConnectAccess2007('c:/users/vijay/documents/my dropbox/alaskafiles/2011 datasheets protocols/2011YRBiodiversity.accdb')
+yrb<-odbcConnectAccess2007('c:/users/vijay/desktop/yrb/YRBiodiversity.accdb')
+
+	sqlQuery(yrb2011,"select TransectID from tblVegTransectMetadata where TransectID like '%0_10_1'")
+	
+	sqlQuery(yrb2011,"select TransectID,LakeID from tblTransects where LakeID = '0_35_1'") 
+	sqlQuery(yrb2011,"select LakeID,Bearing,Species from tblVegTransectSppList where LakeID = '1_58_1'") 
+	sqlQuery(yrb2011,"select distinct(Bearing),LakeID from tblVegTransectSppList where LakeID = '1_58_1'") 
+		
+	#extract all tables from database to a dataframe list
+	a<-sqlTables(yrb2011)
+	a<-a$TABLE_NAME[a$TABLE_TYPE == 'TABLE']
+	yrb2011.list<-list()
+	for(i in 1:length(a))
+	{
+		yrb2011.list[[i]]<-list(a[i],sqlFetch(yrb2011,a[i]))
+	}
+	save.image("C:\\Users\\Vijay\\Documents\\My Dropbox\\AlaskaFiles\\transferWorkspace\\transferWSpace.RData")
+
+	yq<-function(LakeID,Bearing)
+	{
+		q<-paste("select Species,GS,LS,TS,DF,MF,CF,FM,EM,MU,AQ from tblVegTransectSppList where LakeID in ('",LakeID,"') and Bearing in ('",Bearing,"')",sep='')
+		sqlQuery(yrb2011,q)
+	}

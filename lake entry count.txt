@@ -1,0 +1,18 @@
+
+setwd("C:/Users/Vijay/Desktop")
+entry<-read.csv(file='dataentry aug2011_temp.csv',header=TRUE,sep=',')
+names(entry)
+attach(entry)
+length(unique(Lake.ID))
+
+focal.func<-function(x){
+x2<-as.character(x)
+substr(x2,1,nchar(x2)-2)}
+
+focal<-apply(as.matrix(Lake.ID),2,focal.func)
+entry<-cbind(entry,focal)
+
+lakes=unique(focal)
+sum(grep('0',lakes))
+
+nchar(Lake.ID[1])
