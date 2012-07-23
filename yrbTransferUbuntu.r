@@ -1,7 +1,7 @@
 yrb.to.df<-function(path)
 {
 	library(RODBC)
-	yrb<-odbcConnectAccess2007('c:/users/vijay/desktop/yrb/YRBiodiversity.accdb')
+	yrb<-odbcConnectAccess2007('c:/users/vppatil/desktop/yrb/YRBiodiversity.accdb')
 	
 	#extract all tables from database to a dataframe list
 	a<-sqlTables(yrb)
